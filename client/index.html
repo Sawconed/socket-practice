@@ -13,11 +13,13 @@
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages > li { padding: 0.5rem 1rem; }
       #messages > li:nth-child(odd) { background: #efefef; }
+      #typing_notification { display: none; position: absolute; top: -2.1rem; background: #eee; padding: 0.5rem 1rem; border-top-right-radius: 1rem }
     </style>
   </head>
   <body>
     <ul id="messages"></ul>
     <form id="form" action="">
+      <div id="typing_notification">Someone is typing...</div>
       <input id="input" autocomplete="off" /><button>Send</button>
     </form>
   </body>
@@ -28,6 +30,11 @@
     var messages = document.getElementById('messages');
     var form = document.getElementById('form');
     var input = document.getElementById('input');
+    typing_notification = document.getElementById('typing_notification');
+
+    input.addEventListener('input', function(e){
+      socket.emit('message typing', input.value);
+    })
 
     form.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -37,10 +44,16 @@
       }
     });
 
+    socket.on('message typing', function(msg){
+      if (msg === "") typing_notification.style.display = "none";
+      else typing_notification.style.display = "block";
+    })
+
     socket.on('chat message', function(msg){
       var item = document.createElement('li');
       item.textContent = msg;
       messages.appendChild(item);
+      typing_notification.style.display = "none";
       window.scrollTo(0, document.body.scrollHeight);
     });
   </script>
